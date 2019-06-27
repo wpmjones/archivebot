@@ -1,15 +1,12 @@
 import traceback
 import os
+import git
 # import asyncio
 from loguru import logger
 from discord.ext import commands
 from config import settings
 
-os.environ['GIT_PYTHON_GIT_EXECUTABLE'] = "C:\Program Files\Git\bin\git.exe"
-
-import git
-
-enviro = "LIVE"
+enviro = "dev"
 
 if enviro == "LIVE":
     token = settings['discord']['archiveToken']
