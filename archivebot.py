@@ -6,7 +6,7 @@ from loguru import logger
 from discord.ext import commands
 from config import settings
 
-enviro = "dev"
+enviro = "LIVE"
 
 if enviro == "LIVE":
     token = settings['discord']['archiveToken']
