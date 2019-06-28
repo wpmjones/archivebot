@@ -15,7 +15,7 @@ if enviro == "LIVE":
     coc_names = "vps"
 else:
     token = settings['discord']['testToken']
-    prefix = ">"
+    prefix = "."
     log_level = "DEBUG"
     coc_names = "dev"
 
