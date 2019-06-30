@@ -31,7 +31,22 @@ class General(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
+    @commands.command(name="search")
+    async def search(self, ctx, search_str):
+        results = drive_service.files().list(pageSize=10, fields="nextPageToken, files(id, name)").execute()
+        items = results.get('files', [])
+        file_list = ""
+        for item in items:
+            if search_str.lower() in item['name'].lower() and "ARCHIVE" in item['name']:
+                file_list += f"{item['name']} <https://docs.google.com/document/d/{item['id']}/edit>\n"
+        if file_list != "":
+            content = "**Files found:**\n" + file_list
+            await ctx.send(content)
+        else:
+            await ctx.send(f"No files found with the text {search_str} in the title.")
+
     @commands.command(name="archive")
+    @commands.has_role("Council")
     async def archive(self, ctx, channel: str = "x"):
         if channel == "x":
             channel = ctx.channel.name
