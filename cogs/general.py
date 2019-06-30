@@ -33,6 +33,7 @@ class General(commands.Cog):
 
     @commands.command(name="search")
     async def search(self, ctx, search_str):
+        # TODO get all words from search_str not just the first
         results = drive_service.files().list(pageSize=10, fields="nextPageToken, files(id, name)").execute()
         items = results.get('files', [])
         file_list = ""
@@ -187,9 +188,9 @@ class General(commands.Cog):
                                                  body={"requests": requests}).execute()
         self.bot.logger.info(f"Document created: {doc_copy_link}")
         await ctx.send(f"Created document with title: <{doc_copy_link}>\n"
-                       f"This channel will delete in 10 minutes (not really).")
-        # await asyncio.sleep(15)
-        # await ctx.send(f"In real life, I would now delete this channel ({channel}).")
+                       f"I will delete this channel in 10 minutes.")
+        await asyncio.sleep(600)
+        await ctx.channel.delete(reason="Archive")
 
 
 def setup(bot):
