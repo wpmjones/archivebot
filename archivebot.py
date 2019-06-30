@@ -1,7 +1,6 @@
 import traceback
 import os
 import git
-# import asyncio
 from loguru import logger
 from discord.ext import commands
 from config import settings
@@ -46,8 +45,6 @@ initialExtensions = ["cogs.general",
 if __name__ == "__main__":
     bot.remove_command("help")
     bot.repo = git.Repo(os.getcwd())
-    # loop = asyncio.get_event_loop()
-    # bot.loop = loop
     bot.logger = logger
 
     for extension in initialExtensions:
