@@ -31,19 +31,43 @@ class General(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
+    def read_paragraph_element(self, paragraph):
+        text_run = paragraph.get("textRun")
+        if not text_run:
+            return ""
+        return text_run.get("content")
+
     @commands.command(name="search")
     async def search(self, ctx, search_str):
         # TODO get all words from search_str not just the first
-        results = drive_service.files().list(pageSize=10, fields="nextPageToken, files(id, name)").execute()
+        parent = "1kXSqsStCNbcBLwqNUvkKVo4qXDljQCqD"
+        results = drive_service.files().list(fields="nextPageToken, files(id, name, mimeType, trashed)").execute()
         items = results.get('files', [])
         file_list = ""
         for item in items:
-            if search_str.lower() in item['name'].lower() and "ARCHIVE" in item['name']:
-                file_list += f"{item['name']} <https://docs.google.com/document/d/{item['id']}/edit>\n"
+            if item['trashed'] or item['mimeType'] != "application/vnd.google-apps.document":
+                continue
+            if "ARCHIVE" in item['name']:
+                if search_str.lower() in item['name'].lower():
+                    file_list += f"{item['name']} <https://docs.google.com/document/d/{item['id']}/edit>\n"
+                    continue
+                doc = service.documents().get(documentId=item['id']).execute()
+                doc_content = doc.get('body').get('content')
+                content = ""
+                for element in doc_content:
+                    if "paragraph" in element:
+                        paragraphs = element.get("paragraph").get("elements")
+                        for paragraph in paragraphs:
+                            content += self.read_paragraph_element(paragraph)
+                if search_str.lower() in content.lower():
+                    file_list += f"{item['name']} <https://docs.google.com/document/d/{item['id']}/edit>\n"
+        self.bot.logger.info(file_list)
         if file_list != "":
             content = "**Files found:**\n" + file_list
+            self.bot.logger.info(f"Reported:\n{file_list}")
             await ctx.send(content)
         else:
+            self.bot.logger.warn(f"No files found for {search_str}")
             await ctx.send(f"No files found with the text {search_str} in the title.")
 
     @commands.command(name="archive")
