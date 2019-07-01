@@ -71,6 +71,20 @@ class General(commands.Cog):
     @commands.command(name="archive")
     @commands.has_role("Council")
     async def archive(self, ctx, *, channel: str = None):
+        """Archives the current channel.
+
+        This function performs the following tasks:
+        * Creates a new Google Doc (using a template)
+        * Names the Doc using the channel name or the document name specified
+        * Copies all messages from the channel to the Doc
+        * Provides a link to the Doc
+        * Waits 10 minutes, then deletes the Discord channel
+
+        Parameters
+        ----------
+        channel : str, optional
+            Desired document name if different than the channel name.
+        """
         if not channel:
             channel = ctx.channel.name
         now = datetime.utcnow().strftime("%d %B %Y, %H:%M:%S")
