@@ -1,3 +1,5 @@
+![Archive Bot](http://www.mayodev.com/images/archivebot128.png)
+
 # archivebot
 
 Archive Discords Channels to Google Docs
@@ -17,7 +19,7 @@ at all.
 
 ---
 
-##Pre-requisites
+## Pre-requisites
 Turn on the Drive API
  - Navigate to https://developers.google.com/drive/api/v3/quickstart/python
  - Click the Enable the Drive API button
