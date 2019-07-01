@@ -38,9 +38,7 @@ class General(commands.Cog):
         return text_run.get("content")
 
     @commands.command(name="search")
-    async def search(self, ctx, search_str):
-        # TODO get all words from search_str not just the first
-        parent = "1kXSqsStCNbcBLwqNUvkKVo4qXDljQCqD"
+    async def search(self, ctx, *, search_str):
         results = drive_service.files().list(fields="nextPageToken, files(id, name, mimeType, trashed)").execute()
         items = results.get('files', [])
         file_list = ""
@@ -72,7 +70,7 @@ class General(commands.Cog):
 
     @commands.command(name="archive")
     @commands.has_role("Council")
-    async def archive(self, ctx, channel: str = "x"):
+    async def archive(self, ctx, *, channel: str = "x"):
         if channel == "x":
             channel = ctx.channel.name
         now = datetime.utcnow().strftime("%d %B %Y, %H:%M:%S")
