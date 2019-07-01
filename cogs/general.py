@@ -77,7 +77,7 @@ class General(commands.Cog):
         len_now = (len(now.encode('utf-16-le')) / 2) + 4
         doc_name = f"ARCHIVE - {channel.replace('-',' ').title()}"
         len_doc_name = len(doc_name.encode('utf-16-le')) / 2
-        await ctx.send(f"I'ma gonna create an archive named {doc_name}.")
+        msg = await ctx.send(f"One moment while I create an archive named {doc_name}.")
         template_id = "15iTyuU5lax8dJiE1ur9MDnIMm3YCFnlfSXH3pSzJzhk"
         body = {"name": doc_name}
         new_doc = drive_service.files().copy(fileId=template_id, body=body).execute()
@@ -209,7 +209,7 @@ class General(commands.Cog):
         result = service.documents().batchUpdate(documentId=doc_copy_id,
                                                  body={"requests": requests}).execute()
         self.bot.logger.info(f"Document created: {doc_copy_link}")
-        await ctx.send(f"Created document with title: <{doc_copy_link}>\n"
+        await msg.edit(content=f"Created document with title: {doc_name}\n<{doc_copy_link}>\n"
                        f"I will delete this channel in 10 minutes.")
         await asyncio.sleep(600)
         await ctx.channel.delete(reason="Archive")
