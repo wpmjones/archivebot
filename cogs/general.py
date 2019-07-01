@@ -70,14 +70,15 @@ class General(commands.Cog):
 
     @commands.command(name="archive")
     @commands.has_role("Council")
-    async def archive(self, ctx, *, channel: str = "x"):
-        if channel == "x":
+    async def archive(self, ctx, *, channel: str = None):
+        if not channel:
             channel = ctx.channel.name
         now = datetime.utcnow().strftime("%d %B %Y, %H:%M:%S")
         len_now = (len(now.encode('utf-16-le')) / 2) + 4
         doc_name = f"ARCHIVE - {channel.replace('-',' ').title()}"
         len_doc_name = len(doc_name.encode('utf-16-le')) / 2
         msg = await ctx.send(f"One moment while I create an archive named {doc_name}.")
+        # The following template a public Doc and is important for proper formatting of archived channels.
         template_id = "15iTyuU5lax8dJiE1ur9MDnIMm3YCFnlfSXH3pSzJzhk"
         body = {"name": doc_name}
         new_doc = drive_service.files().copy(fileId=template_id, body=body).execute()
