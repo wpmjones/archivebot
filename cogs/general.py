@@ -90,6 +90,7 @@ class General(commands.Cog):
         now = datetime.utcnow().strftime("%d %B %Y, %H:%M:%S")
         len_now = (len(now.encode('utf-16-le')) / 2) + 4
         doc_name = f"ARCHIVE - {channel.replace('-',' ').title()}"
+        doc_name = doc_name.replace("   ", " - ")
         len_doc_name = len(doc_name.encode('utf-16-le')) / 2
         msg = await ctx.send(f"One moment while I create an archive named {doc_name}.")
         # The following template a public Doc and is important for proper formatting of archived channels.
