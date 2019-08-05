@@ -44,6 +44,7 @@ class General(commands.Cog):
         items = results.get('files', [])
         file_list = ""
         for item in items:
+            await msg.edit(msg.content + ".")
             if item['trashed'] or item['mimeType'] != "application/vnd.google-apps.document":
                 continue
             if "ARCHIVE" in item['name']:
