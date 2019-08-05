@@ -44,7 +44,7 @@ class General(commands.Cog):
         items = results.get('files', [])
         file_list = ""
         for item in items:
-            await msg.edit(msg.content + ".")
+            await msg.edit(content=msg.content + ".")
             if item['trashed'] or item['mimeType'] != "application/vnd.google-apps.document":
                 continue
             if "ARCHIVE" in item['name']:
@@ -65,10 +65,10 @@ class General(commands.Cog):
         if file_list != "":
             content = "**Files found:**\n" + file_list
             self.bot.logger.info(f"Reported:\n{file_list}")
-            await msg.edit(content)
+            await msg.edit(content=content)
         else:
             self.bot.logger.warn(f"No files found for {search_str}")
-            await msg.edit(f"No files found with the text {search_str} in the title.")
+            await msg.edit(content=f"No files found with the text {search_str} in the title.")
 
     @commands.command(name="archive")
     @commands.has_any_role("Council", "RCS Scouts")
