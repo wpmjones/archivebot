@@ -39,6 +39,7 @@ class General(commands.Cog):
 
     @commands.command(name="search")
     async def search(self, ctx, *, search_str):
+        msg = ctx.send("One moment while I crack the archives and search for your request...")
         results = drive_service.files().list(fields="nextPageToken, files(id, name, mimeType, trashed)").execute()
         items = results.get('files', [])
         file_list = ""
@@ -63,10 +64,10 @@ class General(commands.Cog):
         if file_list != "":
             content = "**Files found:**\n" + file_list
             self.bot.logger.info(f"Reported:\n{file_list}")
-            await ctx.send(content)
+            await msg.edit(content)
         else:
             self.bot.logger.warn(f"No files found for {search_str}")
-            await ctx.send(f"No files found with the text {search_str} in the title.")
+            await msg.edit(f"No files found with the text {search_str} in the title.")
 
     @commands.command(name="archive")
     @commands.has_any_role("Council", "RCS Scouts")
