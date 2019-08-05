@@ -40,6 +40,7 @@ async def on_resumed():
 
 initialExtensions = ["cogs.general",
                      "cogs.owner",
+                     "cogs.newhelp",
                      ]
 
 if __name__ == "__main__":
