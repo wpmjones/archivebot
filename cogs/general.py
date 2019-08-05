@@ -69,7 +69,7 @@ class General(commands.Cog):
             await ctx.send(f"No files found with the text {search_str} in the title.")
 
     @commands.command(name="archive")
-    @commands.has_role("Council")
+    @commands.has_any_role("Council", "RCS Scouts")
     async def archive(self, ctx, *, channel: str = None):
         """Archives the current channel.
 
