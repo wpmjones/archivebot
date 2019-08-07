@@ -39,27 +39,15 @@ class General(commands.Cog):
         return text_run.get("content")
 
     @commands.command(name="list")
-    async def list(self, ctx):
-        msg = await ctx.send("Hang on while I grab that list for you...")
-        results = drive_service.files().list(fields="nextPageToken, files(id, name, mimeType, trashed)").execute()
-        items = results.get('files', [])
-        file_list = ""
-        for item in items:
-            await msg.edit(content=msg.content + ".")
-            if item['trashed'] or item['mimeType'] != "application/vnd.google-apps.document":
-                continue
-            if "ARCHIVE" in item['name']:
-                file_list += f"{item['name']} <https://docs.google.com/document/d/{item['id']}/edit>\n"
-        content = "**Files found:**\n" + file_list
-        self.bot.logger.info(f"Reported:\n{file_list}")
-        await msg.edit(content="**List of Archive Documents**")
-        await self.send_text(ctx.channel, content)
+    async def archive_list(self, ctx):
+        await ctx.send("The full list of archived documents can be found here.  Please do not share this link outside "
+                       "of the Scounting team.\nhttps://drive.google.com/open?id=1kXSqsStCNbcBLwqNUvkKVo4qXDljQCqD")
 
     @commands.command(name="search")
     async def search(self, ctx, *, search_str):
         if search_str == "list":
-            self.bot.logger.degub("Calling list from search")
-            await list(ctx)
+            self.bot.logger.debug("Calling list from search")
+            await self.archive_list(ctx)
             return
         msg = await ctx.send("One moment while I crack the archives and search for your request...")
         results = drive_service.files().list(fields="nextPageToken, files(id, name, mimeType, trashed)").execute()
