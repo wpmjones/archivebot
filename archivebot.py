@@ -49,7 +49,7 @@ def send_log(message):
 
 
 async def send_message(message):
-    await bot.get_channel(settings['logChannels']['oak']).send(f"`{message}`")
+    await bot.get_channel(settings['logChannels']['archive']).send(f"`{message}`")
 
 logger.add("archivebot.log", rotation="50MB", level=log_level)
 
