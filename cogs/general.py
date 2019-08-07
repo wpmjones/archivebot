@@ -52,11 +52,13 @@ class General(commands.Cog):
                 file_list += f"{item['name']} <https://docs.google.com/document/d/{item['id']}/edit>\n"
         content = "**Files found:**\n" + file_list
         self.bot.logger.info(f"Reported:\n{file_list}")
-        await msg.edit(content=content)
+        await msg.edit(content="**List of Archive Documents**")
+        await self.send_text(ctx.channel, content)
 
     @commands.command(name="search")
     async def search(self, ctx, *, search_str):
         if search_str == "list":
+            self.bot.logger.degub("Calling list from search")
             await list(ctx)
             return
         msg = await ctx.send("One moment while I crack the archives and search for your request...")
@@ -250,6 +252,27 @@ class General(commands.Cog):
                        f"I will delete this channel in 10 minutes.")
         await asyncio.sleep(600)
         await ctx.channel.delete(reason="Archive")
+
+    @staticmethod
+    async def send_text(channel, text, block=None):
+        """ Sends text to channel, splitting if necessary """
+        if len(text) < 2000:
+            if block:
+                await channel.send(f"```{text}```")
+            else:
+                await channel.send(text)
+        else:
+            coll = ""
+            for line in text.splitlines(keepends=True):
+                if len(coll) + len(line) > 1994:
+                    # if collecting is going to be too long, send  what you have so far
+                    if block:
+                        await channel.send(f"```{coll}```")
+                    else:
+                        await channel.send(coll)
+                    coll = ""
+                coll += line
+            await channel.send(coll)
 
 
 def setup(bot):
