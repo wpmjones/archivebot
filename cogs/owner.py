@@ -56,6 +56,7 @@ class OwnerCog(commands.Cog):
     async def clear(self, ctx):
         async for message in ctx.channel.history():
             await message.delete()
+        self.bot.logger.debug(f"{ctx.channel} cleared by {ctx.author}")
 
     @commands.command(name="pull", hidden=True)
     @commands.is_owner()

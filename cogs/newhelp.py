@@ -28,8 +28,14 @@ class NewHelp(commands.Cog):
             help_text = ("Searches existing Google Docs for the text specified.  It will search both "
                          "the title and body of the document, but the search is limited to archived "
                          "channels housed in the RCS Council Google Drive account.\nYou may want to "
-                         "search by clan name or tag, but feel free to search for any text at all.")
+                         "search by clan name or tag, but feel free to search for any text at all.\n\n"
+                         "These are confidential documents.  Please do not share them outside of the "
+                         "Scouting team.")
             embed.add_field(name="/search <search string>", value=help_text, inline=False)
+        if command in ["all", "list"]:
+            help_text = ("Responds with a link to the Google Drive folder containing all of the archived "
+                         "documents.  These are confidential documents.  Please do not share them outside of the "
+                         "Scouting team.")
         embed.set_footer(icon_url="https://openclipart.org/image/300px/svg_to_png/122449/1298569779.png",
                          text="Archive Bot proudly maintained by TubaKid.")
         self.bot.logger.info(f"{ctx.command} by {ctx.author} in {ctx.channel} | "
