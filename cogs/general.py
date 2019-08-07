@@ -31,11 +31,28 @@ class General(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    def read_paragraph_element(self, paragraph):
+    @staticmethod
+    def read_paragraph_element(paragraph):
         text_run = paragraph.get("textRun")
         if not text_run:
             return ""
         return text_run.get("content")
+
+    @commands.command(name="list")
+    async def list(self, ctx):
+        msg = await ctx.send("Hang on while I grab that list for you...")
+        results = drive_service.files().list(fields="nextPageToken, files(id, name, mimeType, trashed)").execute()
+        items = results.get('files', [])
+        file_list = ""
+        for item in items:
+            await msg.edit(content=msg.content + ".")
+            if item['trashed'] or item['mimeType'] != "application/vnd.google-apps.document":
+                continue
+            if "ARCHIVE" in item['name']:
+                file_list += f"{item['name']} <https://docs.google.com/document/d/{item['id']}/edit>\n"
+                content = "**Files found:**\n" + file_list
+                self.bot.logger.info(f"Reported:\n{file_list}")
+                await msg.edit(content=content)
 
     @commands.command(name="search")
     async def search(self, ctx, *, search_str):
