@@ -56,6 +56,9 @@ class General(commands.Cog):
 
     @commands.command(name="search")
     async def search(self, ctx, *, search_str):
+        if search_str == "list":
+            await list(ctx)
+            return
         msg = await ctx.send("One moment while I crack the archives and search for your request...")
         results = drive_service.files().list(fields="nextPageToken, files(id, name, mimeType, trashed)").execute()
         items = results.get('files', [])
