@@ -40,8 +40,9 @@ class General(commands.Cog):
 
     @commands.command(name="list")
     async def archive_list(self, ctx):
-        await ctx.send("The full list of archived documents can be found here.  Please do not share this link outside "
-                       "of the Scounting team.\nhttps://drive.google.com/open?id=1kXSqsStCNbcBLwqNUvkKVo4qXDljQCqD")
+        await ctx.channel.send("The full list of archived documents can be found here. "
+                               "Please do not share this link outside of the Scounting team.\n"
+                               "https://drive.google.com/open?id=1kXSqsStCNbcBLwqNUvkKVo4qXDljQCqD")
 
     @commands.command(name="search")
     async def search(self, ctx, *, search_str):
