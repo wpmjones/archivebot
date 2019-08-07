@@ -1,6 +1,7 @@
 import traceback
 import os
 import git
+import asyncio
 from loguru import logger
 from discord.ext import commands
 from config import settings
@@ -18,8 +19,6 @@ else:
     log_level = "DEBUG"
     coc_names = "dev"
 
-logger.add("archivebot.log", rotation="50MB", level=log_level)
-
 description = """Discord Archive Bot - by TubaKid"""
 
 bot = commands.Bot(command_prefix=prefix, description=description, case_insensitive=True)
@@ -31,6 +30,7 @@ async def on_ready():
     logger.info(f"Logged in as {bot.user}")
     logger.info("-------")
     bot.test_channel = bot.get_channel(settings['oakChannels']['testChat'])
+    logger.add(send_log, level="DEBUG")
     await bot.test_channel.send("Archive Bot is now active")
 
 
@@ -42,6 +42,16 @@ initialExtensions = ["cogs.general",
                      "cogs.owner",
                      "cogs.newhelp",
                      ]
+
+
+def send_log(message):
+    asyncio.ensure_future(send_message(message))
+
+
+async def send_message(message):
+    await bot.get_channel(settings['logChannels']['oak']).send(f"`{message}`")
+
+logger.add("archivebot.log", rotation="50MB", level=log_level)
 
 if __name__ == "__main__":
     bot.remove_command("help")
