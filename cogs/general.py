@@ -40,15 +40,16 @@ class General(commands.Cog):
 
     @commands.command(name="list")
     async def archive_list(self, ctx):
-        await ctx.channel.send("The full list of archived documents can be found here. "
-                               "Please do not share this link outside of the Scounting team.\n"
-                               "https://drive.google.com/open?id=1kXSqsStCNbcBLwqNUvkKVo4qXDljQCqD")
+        await ctx.send("The full list of archived documents can be found here. "
+                       "Please do not share this link outside of the Scounting team.\n"
+                       "https://drive.google.com/open?id=1kXSqsStCNbcBLwqNUvkKVo4qXDljQCqD")
 
     @commands.command(name="search")
     async def search(self, ctx, *, search_str):
         if search_str == "list":
-            self.bot.logger.debug("Calling list from search")
-            await self.archive_list(ctx)
+            await ctx.send("The full list of archived documents can be found here. "
+                           "Please do not share this link outside of the Scounting team.\n"
+                           "https://drive.google.com/open?id=1kXSqsStCNbcBLwqNUvkKVo4qXDljQCqD")
             return
         msg = await ctx.send("One moment while I crack the archives and search for your request...")
         results = drive_service.files().list(fields="nextPageToken, files(id, name, mimeType, trashed)").execute()
