@@ -50,9 +50,9 @@ class General(commands.Cog):
                 continue
             if "ARCHIVE" in item['name']:
                 file_list += f"{item['name']} <https://docs.google.com/document/d/{item['id']}/edit>\n"
-                content = "**Files found:**\n" + file_list
-                self.bot.logger.info(f"Reported:\n{file_list}")
-                await msg.edit(content=content)
+        content = "**Files found:**\n" + file_list
+        self.bot.logger.info(f"Reported:\n{file_list}")
+        await msg.edit(content=content)
 
     @commands.command(name="search")
     async def search(self, ctx, *, search_str):
@@ -81,7 +81,6 @@ class General(commands.Cog):
                             content += self.read_paragraph_element(paragraph)
                 if search_str.lower() in content.lower():
                     file_list += f"{item['name']} <https://docs.google.com/document/d/{item['id']}/edit>\n"
-        self.bot.logger.info(file_list)
         if file_list != "":
             content = "**Files found:**\n" + file_list
             self.bot.logger.info(f"Reported:\n{file_list}")
