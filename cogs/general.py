@@ -47,9 +47,7 @@ class General(commands.Cog):
     @commands.command(name="search")
     async def search(self, ctx, *, search_str):
         if search_str == "list":
-            await ctx.send("The full list of archived documents can be found here. "
-                           "Please do not share this link outside of the Scounting team.\n"
-                           "https://drive.google.com/open?id=1kXSqsStCNbcBLwqNUvkKVo4qXDljQCqD")
+            await ctx.invoke(self.archive_list)
             return
         msg = await ctx.send("One moment while I crack the archives and search for your request...")
         results = drive_service.files().list(fields="nextPageToken, files(id, name, mimeType, trashed)").execute()
