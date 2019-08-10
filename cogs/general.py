@@ -226,9 +226,9 @@ class General(commands.Cog):
                         }
                     })
                     start += len_attachment + 2
-                except AttributeError:
+                except (TypeError, AttributeError) as e:
                     # This should handle non-image attachments and effectively skip them.
-                    self.bot.logger.error(f"Attribute error on attachment. Including link only.\n{attachment.url}")
+                    self.bot.logger.error(f"Error on attachment. Including link only.\n{attachment.url}\n{e}")
                     requests.append({
                         "insertText": {
                             "location": {
