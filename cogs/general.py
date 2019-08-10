@@ -181,6 +181,7 @@ class General(commands.Cog):
             })
             start += len_message + 2
             for attachment in message.attachments:
+                self.bot.logger.debug(attachment.url)
                 len_attachment = len(attachment.url.encode('utf-16-le')) / 2
                 try:
                     if attachment.width > 450:
@@ -227,6 +228,7 @@ class General(commands.Cog):
                     start += len_attachment + 2
                 except AttributeError:
                     # This should handle non-image attachments and effectively skip them.
+                    self.bot.logger.error(f"Attribute error on attachment. Including link only.\n{attachment.url}")
                     requests.append({
                         "insertText": {
                             "location": {
