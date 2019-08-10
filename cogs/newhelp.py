@@ -36,6 +36,7 @@ class NewHelp(commands.Cog):
             help_text = ("Responds with a link to the Google Drive folder containing all of the archived "
                          "documents.  These are confidential documents.  Please do not share them outside of the "
                          "Scouting team.")
+            embed.add_field(name="/list", value=help_text, inline=False)
         embed.set_footer(icon_url="https://openclipart.org/image/300px/svg_to_png/122449/1298569779.png",
                          text="Archive Bot proudly maintained by TubaKid.")
         self.bot.logger.info(f"{ctx.command} by {ctx.author} in {ctx.channel} | "
