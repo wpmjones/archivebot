@@ -182,57 +182,69 @@ class General(commands.Cog):
             start += len_message + 2
             for attachment in message.attachments:
                 len_attachment = len(attachment.url.encode('utf-16-le')) / 2
-                if attachment.width > 450:
-                    doc_width = 450
-                else:
-                    doc_width = attachment.width
-                requests.append({
-                    "insertInlineImage": {
-                        "location": {
-                            "index": start
-                        },
-                        "uri": attachment.url,
-                        "objectSize": {
-                            "width": {
-                                "magnitude": doc_width,
-                                "unit": "PT"
+                try:
+                    if attachment.width > 450:
+                        doc_width = 450
+                    else:
+                        doc_width = attachment.width
+                    requests.append({
+                        "insertInlineImage": {
+                            "location": {
+                                "index": start
+                            },
+                            "uri": attachment.url,
+                            "objectSize": {
+                                "width": {
+                                    "magnitude": doc_width,
+                                    "unit": "PT"
+                                }
                             }
                         }
-                    }
-                })
-                start += 1
+                    })
+                    start += 1
+                    requests.append({
+                        "insertText": {
+                            "location": {
+                                "index": start
+                            },
+                            "text": attachment.url + "\n\n"
+                        }
+                    })
+                    requests.append({
+                        "updateTextStyle": {
+                            "range": {
+                                "startIndex": start,
+                                "endIndex": start + len_attachment
+                            },
+                            "textStyle": {
+                                "link": {
+                                    "url": attachment.url
+                                }
+                            },
+                            "fields": "link"
+                        }
+                    })
+                    start += len_attachment + 2
+                except AttributeError:
+                    # This should handle non-image attachments and effectively skip them.
+                    requests.append({
+                        "insertText": {
+                            "location": {
+                                "index": start
+                            },
+                            "text": attachment.url + "\n\n"
+                        }
+                    })
+                    start += len_attachment + 2
                 requests.append({
                     "insertText": {
                         "location": {
                             "index": start
                         },
-                        "text": attachment.url + "\n\n"
+                        "text": "--------------------\n\n"
                     }
                 })
-                requests.append({
-                    "updateTextStyle": {
-                        "range": {
-                            "startIndex": start,
-                            "endIndex": start + len_attachment
-                        },
-                        "textStyle": {
-                            "link": {
-                                "url": attachment.url
-                            }
-                        },
-                        "fields": "link"
-                    }
-                })
-                start += len_attachment + 2
-            requests.append({
-                "insertText": {
-                    "location": {
-                        "index": start
-                    },
-                    "text": "--------------------\n\n"
-                }
-            })
-            start += 22
+                start += 22
         result = service.documents().batchUpdate(documentId=doc_copy_id,
                                                  body={"requests": requests}).execute()
         self.bot.logger.info(f"Document created: {doc_copy_link}")
