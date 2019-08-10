@@ -181,7 +181,6 @@ class General(commands.Cog):
             })
             start += len_message + 2
             for attachment in message.attachments:
-                self.bot.logger.debug(attachment.url)
                 len_attachment = len(attachment.url.encode('utf-16-le')) / 2
                 try:
                     if attachment.width > 450:
