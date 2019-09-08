@@ -261,9 +261,12 @@ class General(commands.Cog):
             return str(r) in reactions and u.id == ctx.author.id and r.message.id == msg.id
 
         msg = await ctx.send("Are you sure you want to delete this channel?")
-        reactions = [":regional_indicator_y:", ":regional_indicator_n:"]
+        reactions = ["🇾", "🇳"]
         for r in reactions:
-            await msg.add_reaction(r)
+            try:
+                await msg.add_reaction(r)
+            except:
+                self.bot.logger.exception("Emoji fail")
         try:
             r, u = await self.bot.wait_for("reaction_add", check=check, timeout=60.0)
         except asyncio.TimeoutError:
@@ -272,14 +275,15 @@ class General(commands.Cog):
             msg = await ctx.send("Timeout - Deletion Cancelled")
             await msg.delete(delay=60.0)
             return
-        if r == ":regional_indicator_n:":
+        if reactions.index(str(r)) == 1:
             await ctx.message.delete()
             await msg.delete()
             msg = await ctx.send("Deletion cancelled by user")
             await msg.delete(delay=15.0)
             return
-        if r == ":regional_indicator_y:":
-            await ctx.channel.delete(reason="Delete command")
+        if reactions.index(str(r)) == 0:
+            self.bot.logger.info(f"{ctx.channel} on {ctx.guild} deleted by {ctx.author}")
+            await ctx.channel.delete(reason="Delete command from Archive Bot")
 
 @staticmethod
 async def send_text(channel, text, block=None):
