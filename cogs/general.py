@@ -255,7 +255,7 @@ class General(commands.Cog):
 
     @commands.command(name="delete")
     @commands.has_any_role("Council")
-    async def archive(self, ctx):
+    async def delete_channel(self, ctx):
         """Deletes the current channel."""
         def check(r, u):
             return str(r) in reactions and u.id == ctx.author.id and r.message.id == msg.id
