@@ -250,30 +250,57 @@ class General(commands.Cog):
                                                  body={"requests": requests}).execute()
         self.bot.logger.info(f"Document created: {doc_copy_link}")
         await msg.edit(content=f"Created document with title: {doc_name}\n<{doc_copy_link}>\n"
-                       f"I will delete this channel in 10 minutes.")
-        await asyncio.sleep(600)
-        await ctx.channel.delete(reason="Archive")
+                               f"Please check that the entire document was archived properly, then issue the "
+                               f"`/delete` command.")
 
-    @staticmethod
-    async def send_text(channel, text, block=None):
-        """ Sends text to channel, splitting if necessary """
-        if len(text) < 2000:
-            if block:
-                await channel.send(f"```{text}```")
-            else:
-                await channel.send(text)
+    @commands.command(name="delete")
+    @commands.has_any_role("Council")
+    async def archive(self, ctx):
+        """Deletes the current channel."""
+        def check(r, u):
+            return str(r) in reactions and u.id == ctx.author.id and r.message.id == msg.id
+
+        msg = await ctx.send("Are you sure you want to delete this channel?")
+        reactions = [":regional_indicator_y:", ":regional_indicator_n:"]
+        for r in reactions:
+            await msg.add_reaction(r)
+        try:
+            r, u = await self.bot.wait_for("reaction_add", check=check, timeout=60.0)
+        except asyncio.TimeoutError:
+            await ctx.message.delete()
+            await msg.delete()
+            msg = await ctx.send("Timeout - Deletion Cancelled")
+            await msg.delete(delay=60.0)
+            return
+        if r == ":regional_indicator_n:":
+            await ctx.message.delete()
+            await msg.delete()
+            msg = await ctx.send("Deletion cancelled by user")
+            await msg.delete(delay=15.0)
+            return
+        if r == ":regional_indicator_y:":
+            await ctx.channel.delete(reason="Delete command")
+
+@staticmethod
+async def send_text(channel, text, block=None):
+    """ Sends text to channel, splitting if necessary """
+    if len(text) < 2000:
+        if block:
+            await channel.send(f"```{text}```")
         else:
-            coll = ""
-            for line in text.splitlines(keepends=True):
-                if len(coll) + len(line) > 1994:
-                    # if collecting is going to be too long, send  what you have so far
-                    if block:
-                        await channel.send(f"```{coll}```")
-                    else:
-                        await channel.send(coll)
-                    coll = ""
-                coll += line
-            await channel.send(coll)
+            await channel.send(text)
+    else:
+        coll = ""
+        for line in text.splitlines(keepends=True):
+            if len(coll) + len(line) > 1994:
+                # if collecting is going to be too long, send  what you have so far
+                if block:
+                    await channel.send(f"```{coll}```")
+                else:
+                    await channel.send(coll)
+                coll = ""
+            coll += line
+        await channel.send(coll)
 
 
 def setup(bot):
