@@ -44,40 +44,59 @@ class General(commands.Cog):
                        "Please do not share this link outside of the Scounting team.\n"
                        "https://drive.google.com/open?id=1kXSqsStCNbcBLwqNUvkKVo4qXDljQCqD")
 
+    @commands.command(name="build")
+    async def build(self, ctx):
+        msg = await ctx.send("One moment while I crack the archives and search for your request...")
+        results = drive_service.files().list(pageSize=1000,
+                                             fields="nextPageToken, files(id, name, mimeType, trashed)").execute()
+        items = results.get('files', [])
+        conn = self.bot.pool
+        sql = "SELECT doc_link FROM rcs_archives"
+        rows = await conn.fetch(sql)
+        links = [row['doc_link'] for row in rows]
+        print(links)
+        for item in items:
+            if item['id'] in links:
+                continue
+            await msg.edit(content=msg.content + ".")
+            if item['trashed'] or item['mimeType'] != "application/vnd.google-apps.document":
+                continue
+            if "ARCHIVE" in item['name']:
+                try:
+                    doc = service.documents().get(documentId=item['id']).execute()
+                    doc_content = doc.get('body').get('content')
+                    content = ""
+                    for element in doc_content:
+                        if "paragraph" in element:
+                            paragraphs = element.get("paragraph").get("elements")
+                            for paragraph in paragraphs:
+                                content += self.read_paragraph_element(paragraph)
+                    sql = ("INSERT INTO rcs_archives (doc_title, doc_link, doc_body) "
+                           "VALUES ($1, $2, $3)")
+                    await conn.execute(sql, item['name'], item['id'], content)
+                    self.bot.logger.info(f"Added {item['name']} to database")
+                except:
+                    self.bot.logger.exception(f"Failed on {item['name']}")
+
     @commands.command(name="search")
     async def search(self, ctx, *, search_str):
         if search_str == "list":
             await ctx.invoke(self.archive_list)
             return
         msg = await ctx.send("One moment while I crack the archives and search for your request...")
-        results = drive_service.files().list(fields="nextPageToken, files(id, name, mimeType, trashed)").execute()
-        items = results.get('files', [])
+        conn = self.bot.pool
+        sql = "SELECT doc_title, doc_link, doc_body FROM rcs_archives WHERE doc_title ~* $1 or doc_body ~* $2"
+        rows = await conn.fetch(sql, search_str, search_str)
         file_list = ""
-        for item in items:
-            await msg.edit(content=msg.content + ".")
-            if item['trashed'] or item['mimeType'] != "application/vnd.google-apps.document":
-                continue
-            if "ARCHIVE" in item['name']:
-                if search_str.lower() in item['name'].lower():
-                    file_list += f"{item['name']} <https://docs.google.com/document/d/{item['id']}/edit>\n"
-                    continue
-                doc = service.documents().get(documentId=item['id']).execute()
-                doc_content = doc.get('body').get('content')
-                content = ""
-                for element in doc_content:
-                    if "paragraph" in element:
-                        paragraphs = element.get("paragraph").get("elements")
-                        for paragraph in paragraphs:
-                            content += self.read_paragraph_element(paragraph)
-                if search_str.lower() in content.lower():
-                    file_list += f"{item['name']} <https://docs.google.com/document/d/{item['id']}/edit>\n"
+        if not rows:
+            self.bot.logger.warning(f"No files found for {search_str}")
+            await msg.edit(content=f"No files found with the text {search_str} in the title or body.")
+        for row in rows:
+            file_list += f"{row['doc_title']} <https://docs.google.com/document/d/{row['doc_link']}/edit>\n"
         if file_list != "":
             content = "**Files found:**\n" + file_list
             self.bot.logger.info(f"Reported:\n{file_list}")
             await msg.edit(content=content)
-        else:
-            self.bot.logger.warn(f"No files found for {search_str}")
-            await msg.edit(content=f"No files found with the text {search_str} in the title.")
 
     @commands.command(name="archive")
     @commands.has_any_role("Council", "RCS Scouts")
@@ -110,6 +129,7 @@ class General(commands.Cog):
         new_doc = drive_service.files().copy(fileId=template_id, body=body).execute()
         doc_copy_id = new_doc.get('id')
         doc_copy_link = f"https://docs.google.com/document/d/{doc_copy_id}/edit"
+        doc_body = ""
         # Add perms for those with a link to view
         body = {
             "role": "reader",
@@ -136,6 +156,7 @@ class General(commands.Cog):
                 }
             }
         ]
+        doc_body += f"{doc_name}\n{now} GMT\n\n"
         # Get message from Discord here
         start = len_doc_name + len_now + 7
         async for message in ctx.channel.history(before=ctx.message, oldest_first=True):
@@ -148,6 +169,7 @@ class General(commands.Cog):
                     "text": message.author.display_name + "\n"
                 }
             })
+            doc_body += message.author.display_name + "\n"
             requests.append({
                 "updateTextStyle": {
                     "range": {
@@ -169,6 +191,7 @@ class General(commands.Cog):
                     "text": created + "\n\n"
                 }
             })
+            doc_body += created + "\n\n"
             start += len_date + 2
             len_message = len(message.content.encode('utf-16-le')) / 2
             requests.append({
@@ -179,6 +202,7 @@ class General(commands.Cog):
                     "text": message.content + "\n\n"
                 }
             })
+            doc_body += message.content + "\n\n"
             start += len_message + 2
             for attachment in message.attachments:
                 len_attachment = len(attachment.url.encode('utf-16-le')) / 2
@@ -210,6 +234,7 @@ class General(commands.Cog):
                             "text": attachment.url + "\n\n"
                         }
                     })
+                    doc_body += attachment.url + "\n\n"
                     requests.append({
                         "updateTextStyle": {
                             "range": {
@@ -248,6 +273,10 @@ class General(commands.Cog):
                 start += 22
         result = service.documents().batchUpdate(documentId=doc_copy_id,
                                                  body={"requests": requests}).execute()
+        conn = self.bot.pool
+        sql = ("INSERT INTO rcs_archives (doc_title, doc_link, doc_body) "
+               "VALUES ($1, $2, $3)")
+        await conn.execute(sql, doc_name, doc_copy_id, doc_body)
         self.bot.logger.info(f"Document created: {doc_copy_link}")
         await msg.edit(content=f"Created document with title: {doc_name}\n<{doc_copy_link}>\n"
                                f"Please check that the entire document was archived properly, then issue the "

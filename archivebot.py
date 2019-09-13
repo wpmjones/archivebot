@@ -2,6 +2,7 @@ import traceback
 import os
 import git
 import asyncio
+from cogs.utils.db import ArchiveDB
 from loguru import logger
 from discord.ext import commands
 from config import settings
@@ -13,9 +14,14 @@ if enviro == "LIVE":
     prefix = "/"
     log_level = "INFO"
     coc_names = "vps"
+elif enviro == "home":
+    token = settings['discord']['testToken']
+    prefix = ">"
+    log_level = "DEBUG"
+    coc_names = "ubuntu"
 else:
     token = settings['discord']['testToken']
-    prefix = "."
+    prefix = ">"
     log_level = "DEBUG"
     coc_names = "dev"
 
@@ -56,6 +62,9 @@ logger.add("archivebot.log", rotation="50MB", level=log_level)
 if __name__ == "__main__":
     bot.remove_command("help")
     bot.repo = git.Repo(os.getcwd())
+    bot.db = ArchiveDB(bot)
+    loop = asyncio.get_event_loop()
+    bot.pool = loop.run_until_complete(bot.db.create_pool())
     bot.logger = logger
 
     for extension in initialExtensions:
