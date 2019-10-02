@@ -35,14 +35,19 @@ async def on_ready():
     logger.info("-------")
     logger.info(f"Logged in as {bot.user}")
     logger.info("-------")
-    bot.test_channel = bot.get_channel(settings['oakChannels']['testChat'])
-    logger.add(send_log, level="DEBUG")
-    await bot.test_channel.send("Archive Bot is now active")
 
 
 @bot.event
 async def on_resumed():
     logger.info('resumed...')
+
+
+@bot.event
+async def on_message_delete(message):
+    if message.id in bot.messages:
+        del_message = bot.messages[message.id]
+        await del_message.delete()
+        del bot.messages[message.id]
 
 initialExtensions = ["cogs.general",
                      "cogs.owner",
@@ -55,9 +60,17 @@ def send_log(message):
 
 
 async def send_message(message):
-    await bot.get_channel(settings['logChannels']['archive']).send(f"`{message}`")
+    if len(message) < 2000:
+        await bot.get_channel(settings['logChannels']['archive']).send(f"`{message}`")
+    else:
+        await bot.get_channel(settings['logChannels']['archive']).send(f"`{message[:1950]}`")
 
 logger.add("archivebot.log", rotation="50MB", level=log_level)
+
+
+async def after_ready():
+    await bot.wait_until_ready()
+    logger.add(send_log, level="DEBUG")
 
 if __name__ == "__main__":
     bot.remove_command("help")
@@ -65,7 +78,10 @@ if __name__ == "__main__":
     bot.db = ArchiveDB(bot)
     loop = asyncio.get_event_loop()
     bot.pool = loop.run_until_complete(bot.db.create_pool())
+    loop.create_task(after_ready())
     bot.logger = logger
+    # Set up for message deletion
+    bot.messages = {}
 
     for extension in initialExtensions:
         try:

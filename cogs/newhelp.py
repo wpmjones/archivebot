@@ -13,8 +13,9 @@ class NewHelp(commands.Cog):
                 "You can type /help <command> to display only the help for that command.")
         if command not in ["all", "archive", "search"]:
             self.bot.logger.error(f"Problem: /help {command} does not exist.")
-            await ctx.send(f":x: You have provided a command that doesn't exist. Perhaps try "
-                           f"`/help` to see all commands.")
+            msg = await ctx.send(f":x: You have provided a command that doesn't exist. Perhaps try "
+                                 f"`/help` to see all commands.")
+            self.bot.messages[ctx.message.id] = msg
             return
         embed = discord.Embed(title="Archive Bot by TubaKid", description=desc, color=discord.Color.green())
         embed.add_field(name="Commands:", value="-----------", inline=False)
@@ -41,7 +42,8 @@ class NewHelp(commands.Cog):
                          text="Archive Bot proudly maintained by TubaKid.")
         self.bot.logger.info(f"{ctx.command} by {ctx.author} in {ctx.channel} | "
                              f"Request complete: /help {command}")
-        await ctx.send(embed=embed)
+        msg = await ctx.send(embed=embed)
+        self.bot.messages[ctx.message.id] = msg
 
 
 def setup(bot):

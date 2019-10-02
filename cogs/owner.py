@@ -66,10 +66,11 @@ class OwnerCog(commands.Cog):
         try:
             origin.pull()
             print("Code successfully pulled from GitHub")
-            await ctx.send("Code successfully pulled from GitHub")
+            msg = await ctx.send("Code successfully pulled from GitHub")
         except Exception as e:
             print(f"ERROR: {type(e).__name__} - {e}")
-            await ctx.send(f"**`ERROR:`** {type(e).__name__} - {e}")
+            msg = await ctx.send(f"**`ERROR:`** {type(e).__name__} - {e}")
+        self.bot.messages[ctx.message.id] = msg
 
 
 def setup(bot):
