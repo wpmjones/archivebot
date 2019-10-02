@@ -50,7 +50,7 @@ async def on_message_delete(message):
         del bot.messages[message.id]
 
 initialExtensions = ["cogs.general",
-                     "cogs.owner",
+                     "cogs.admin",
                      "cogs.newhelp",
                      ]
 
