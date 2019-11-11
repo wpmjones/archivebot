@@ -38,11 +38,6 @@ async def on_ready():
 
 
 @bot.event
-async def on_resumed():
-    logger.info('resumed...')
-
-
-@bot.event
 async def on_message_delete(message):
     if message.id in bot.messages:
         del_message = bot.messages[message.id]
