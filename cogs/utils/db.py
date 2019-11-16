@@ -7,5 +7,5 @@ class ArchiveDB:
         self.bot = bot
 
     async def create_pool(self):
-        pool = await asyncpg.create_pool(settings['pg']['uri'], max_size=15)
+        pool = await asyncpg.create_pool(settings['pg']['uri'] + "/postgres", max_size=15)
         return pool

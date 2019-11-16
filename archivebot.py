@@ -40,10 +40,6 @@ async def on_ready():
     await bot.test_channel.send("Archive Bot is now active")
 
 
-@bot.event
-async def on_resumed():
-    logger.info('resumed...')
-
 initialExtensions = ["cogs.general",
                      "cogs.owner",
                      "cogs.newhelp",

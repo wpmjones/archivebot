@@ -46,7 +46,8 @@ class General(commands.Cog):
 
     @commands.command(name="build")
     async def build(self, ctx):
-        msg = await ctx.send("One moment while I crack the archives and search for your request...")
+        await ctx.send("One moment while I rebuild the database. This could take a while. Feel free to work "
+                       "on some other things while I do this.")
         results = drive_service.files().list(pageSize=1000,
                                              fields="nextPageToken, files(id, name, mimeType, trashed)").execute()
         items = results.get('files', [])
@@ -54,11 +55,9 @@ class General(commands.Cog):
         sql = "SELECT doc_link FROM rcs_archives"
         rows = await conn.fetch(sql)
         links = [row['doc_link'] for row in rows]
-        print(links)
         for item in items:
             if item['id'] in links:
                 continue
-            await msg.edit(content=msg.content + ".")
             if item['trashed'] or item['mimeType'] != "application/vnd.google-apps.document":
                 continue
             if "ARCHIVE" in item['name']:
@@ -77,6 +76,7 @@ class General(commands.Cog):
                     self.bot.logger.info(f"Added {item['name']} to database")
                 except:
                     self.bot.logger.exception(f"Failed on {item['name']}")
+        await ctx.send("Finally done.  Database is up to date!")
 
     @commands.command(name="search")
     async def search(self, ctx, *, search_str):
