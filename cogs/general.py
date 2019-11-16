@@ -97,6 +97,7 @@ class General(commands.Cog):
             content = "**Files found:**\n" + file_list
             self.bot.logger.info(f"Reported:\n{file_list}")
             await msg.edit(content=content)
+        self.bot.messages[ctx.message.id] = msg
 
     @commands.command(name="archive")
     @commands.has_any_role("Council", "RCS Scouts")
@@ -314,7 +315,7 @@ class General(commands.Cog):
             self.bot.logger.info(f"{ctx.channel} on {ctx.guild} deleted by {ctx.author}")
             await ctx.channel.delete(reason="Delete command from Archive Bot")
 
-@staticmethod
+
 async def send_text(channel, text, block=None):
     """ Sends text to channel, splitting if necessary """
     if len(text) < 2000:
