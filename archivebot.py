@@ -1,13 +1,16 @@
+import discord
 import traceback
 import os
 import git
 import asyncio
-from cogs.utils.db import ArchiveDB
-from loguru import logger
+
 from discord.ext import commands
+from cogs.utils.db import ArchiveDB
+from datetime import datetime
+from loguru import logger
 from config import settings
 
-enviro = "LIVE"
+enviro = "home"
 
 if enviro == "LIVE":
     token = settings['discord']['archiveToken']
@@ -25,58 +28,74 @@ else:
     log_level = "DEBUG"
     coc_names = "dev"
 
-description = """Discord Archive Bot - by TubaKid"""
-
-bot = commands.Bot(command_prefix=prefix, description=description, case_insensitive=True)
-
-
-@bot.event
-async def on_ready():
-    logger.info("-------")
-    logger.info(f"Logged in as {bot.user}")
-    logger.info("-------")
-
-
-@bot.event
-async def on_message_delete(message):
-    if message.id in bot.messages:
-        del_message = bot.messages[message.id]
-        await del_message.delete()
-        del bot.messages[message.id]
-
 initialExtensions = ["cogs.general",
                      "cogs.admin",
                      "cogs.newhelp",
                      ]
 
-
-def send_log(message):
-    asyncio.ensure_future(send_message(message))
+description = """Discord Archive Bot - by TubaKid"""
 
 
-async def send_message(message):
-    if len(message) < 2000:
-        await bot.get_channel(settings['logChannels']['archive']).send(f"`{message}`")
-    else:
-        await bot.get_channel(settings['logChannels']['archive']).send(f"`{message[:1950]}`")
+class ArchiveBot(commands.Bot):
+    def __init__(self):
+        super().__init__(command_prefix=prefix,
+                         description=description,
+                         case_insensitive=True)
+        self.remove_command("help")
+        self.logger = logger
+        self.messages = {}
 
-logger.add("archivebot.log", rotation="50MB", level=log_level)
+    @property
+    def log_channel(self):
+        return self.get_channel(settings['logChannels']['archive'])
 
+    async def on_ready(self):
+        logger.info("-------")
+        logger.info(f"Logged in as {self.user}")
+        logger.info("-------")
 
-async def after_ready():
-    await bot.wait_until_ready()
-    logger.add(send_log, level="DEBUG")
+    async def on_message_delete(self, message):
+        if message.id in self.messages:
+            del_message = self.messages[message.id]
+            await del_message.delete()
+            del self.messages[message.id]
+
+    def send_log(self, message):
+        asyncio.ensure_future(self.send_message(message))
+
+    async def send_message(self, message):
+        if len(message) < 2000:
+            await self.log_channel.send(f"`{message}`")
+        else:
+            await self.log_channel.send(f"`{message[:1950]}`")
+
+    async def after_ready(self):
+        await self.wait_until_ready()
+        logger.add(self.send_log, level=log_level)
+
+    async def on_error(self, event_method, *args, **kwargs):
+        embed = discord.Embed(title="Discord Event Error", color=0xa32952)
+        embed.add_field(name="Event", value=event_method)
+        embed.description = f"```py\n{traceback.format_exc()}\n```"
+        embed.timestamp = datetime.utcnow()
+        args_str = ["```py"]
+        for index, arg in enumerate(args):
+            args_str.append(f"[{index}]: {args!r}")
+        args_str.append("```")
+        embed.add_field(name="Args", value="\n".join(args_str), inline=False)
+        try:
+            await self.log_channel.send(embed=embed)
+        except:
+            pass
+
 
 if __name__ == "__main__":
-    bot.remove_command("help")
+    loop = asyncio.get_event_loop()
+    bot = ArchiveBot()
     bot.repo = git.Repo(os.getcwd())
     bot.db = ArchiveDB(bot)
-    loop = asyncio.get_event_loop()
     bot.pool = loop.run_until_complete(bot.db.create_pool())
-    loop.create_task(after_ready())
-    bot.logger = logger
-    # Set up for message deletion
-    bot.messages = {}
+    bot.loop = loop
 
     for extension in initialExtensions:
         try:

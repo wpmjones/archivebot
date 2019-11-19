@@ -1,3 +1,4 @@
+import discord
 import pickle
 import os.path
 import asyncio
@@ -47,7 +48,7 @@ class General(commands.Cog):
     @commands.command(name="build")
     async def build(self, ctx):
         await ctx.send("One moment while I rebuild the database. This could take a while. Feel free to work "
-                       "on some other things while I do this.")
+                       "on some other things while I do this!")
         results = drive_service.files().list(pageSize=1000,
                                              fields="nextPageToken, files(id, name, mimeType, trashed)").execute()
         items = results.get('files', [])
@@ -160,7 +161,7 @@ class General(commands.Cog):
         doc_body += f"{doc_name}\n{now} GMT\n\n"
         # Get message from Discord here
         start = len_doc_name + len_now + 7
-        async for message in ctx.channel.history(before=ctx.message, oldest_first=True):
+        async for message in ctx.channel.history(before=ctx.message, limit=None, oldest_first=True):
             len_author = len(message.author.display_name.encode('utf-16-le')) / 2
             requests.append({
                 "insertText": {
@@ -278,7 +279,11 @@ class General(commands.Cog):
         sql = ("INSERT INTO rcs_archives (doc_title, doc_link, doc_body) "
                "VALUES ($1, $2, $3)")
         await conn.execute(sql, doc_name, doc_copy_id, doc_body)
-        self.bot.logger.info(f"Document created: {doc_copy_link}")
+        embed = discord.Embed(title="Archive Document Created", color=discord.Color.purple())
+        embed.add_field(name="Guild", value=ctx.guild.name, inline=False)
+        embed.add_field(name="Channel", value=ctx.channel.name, inline=False)
+        embed.add_field(name=doc_name, value=doc_copy_link, inline=False)
+        await self.bot.log_channel.send(embed=embed)
         await msg.edit(content=f"Created document with title: {doc_name}\n<{doc_copy_link}>\n"
                                f"Please check that the entire document was archived properly, then issue the "
                                f"`/delete` command.")
