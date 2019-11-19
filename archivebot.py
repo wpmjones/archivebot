@@ -10,7 +10,7 @@ from datetime import datetime
 from loguru import logger
 from config import settings
 
-enviro = "home"
+enviro = "LIVE"
 
 if enviro == "LIVE":
     token = settings['discord']['archiveToken']
