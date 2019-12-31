@@ -9,7 +9,7 @@ from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
 
 # Connect to Google Sheets
-scope = "https://www.googleapis.com/auth/drive"
+scope = ["https://www.googleapis.com/auth/drive"]
 creds = None
 if os.path.exists("token.pickle"):
     with open("token.pickle", "rb") as token:
