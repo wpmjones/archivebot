@@ -14,10 +14,12 @@ creds = None
 if os.path.exists("token.pickle"):
     with open("token.pickle", "rb") as token:
         creds = pickle.load(token)
+print("past open")
 if not creds or not creds.valid:
     if creds and creds.expired and creds.refresh_token:
         creds.refresh(Request())
     else:
+        print("right place")
         flow = InstalledAppFlow.from_client_secrets_file("credentials.json", scope)
         creds = flow.run_local_server()
     # Save the credentials for the next run
