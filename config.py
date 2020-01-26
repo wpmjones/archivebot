@@ -1,9 +1,9 @@
 import yaml
 
-with open("/home/tuba/config.yaml", "r") as file:
+with open("config.yaml", "r") as file:
     settings = yaml.load(file, Loader=yaml.CLoader)
 
-with open("/home/tuba/emoji.yaml", "r") as file:
+with open("emoji.yaml", "r") as file:
     emojis = yaml.load(file, Loader=yaml.CLoader)
 
 
